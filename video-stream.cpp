@@ -38,11 +38,30 @@ int main()
 
     // Creating OpenCV Matrix from a color image
     Mat color(Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), Mat::AUTO_STEP);
-
+    Mat dst, cdst;
+    Canny(color, dst, 50, 200, 3);
+    cvtColor(dst, cdst, CV_GRAY2BGR);
+    vector<Vec2f> lines;
+    HoughLines(dst, lines, 1, CV_PI/180, 150, 0, 0 );
+         for( size_t i = 0; i < lines.size(); i++ )
+      {
+          float rho = lines[i][0], theta = lines[i][1];
+          if( theta>CV_PI/180*50 || theta<CV_PI/180*40)
+        { Point pt1, pt2;
+          double a = cos(theta), b = sin(theta);
+          double x0 = a*rho, y0 = b*rho;
+          pt1.x = cvRound(x0 + 1000*(-b));
+          pt1.y = cvRound(y0 + 1000*(a));
+          pt2.x = cvRound(x0 - 1000*(-b));
+          pt2.y = cvRound(y0 - 1000*(a));
+          line( cdst, pt1, pt2, Scalar(0,0,255), 3, CV_AA);
+      }
+    }  
     // Display in a GUI
     namedWindow("Display Image", WINDOW_AUTOSIZE );
     imshow("Display Image", color);
-    cout << "running" << endl;
+    imshow("Lines", cdst);
+//    cout << "running" << endl;
      waitKey(25);
     //cout << "running" << endl;
 }
